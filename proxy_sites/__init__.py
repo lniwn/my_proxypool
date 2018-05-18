@@ -12,7 +12,7 @@ class Registerable(abc.ABC):
         return inst
 
     @abc.abstractmethod
-    def yield_proxy(self):
+    async def yield_proxy(self, *args, **kwargs):
         yield None
 
 
@@ -45,6 +45,6 @@ def register_all(condition=None):
     for n in modules:
         m = importlib.import_module(__name__ + '.' + n)
         for name, obj in inspect.getmembers(m, inspect.isclass):
-            if callable(condition) and condition(name, obj):
+            if (not callable(condition)) or condition(name, obj):
                 if issubclass(obj, Registerable) and (obj is not Registerable):
                     obj()
