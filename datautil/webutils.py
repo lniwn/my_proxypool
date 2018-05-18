@@ -32,7 +32,7 @@ class ProxyValidator:
             'Host': 'httpbin.org',
             'Pragma': 'no-cache'
         }
-        self._sess = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit_per_host=10),
+        self._sess = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit_per_host=30),
                                            loop=ev_loop, headers=self._headers, read_timeout=60, conn_timeout=30)
 
     def __enter__(self):
