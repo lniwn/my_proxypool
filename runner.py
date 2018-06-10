@@ -16,7 +16,8 @@ async def run(ev_loop):
     print('获得原始代理个数：', len(proxy_list))
     print('开始筛选代理...')
     async with webutils.ProxyValidator(ev_loop) as validator:
-        tasks = [asyncio.ensure_future(validator.is_useable(pp)) for pp in proxy_list]
+        # aiohttp only support http proxy
+        tasks = [asyncio.ensure_future(validator.is_useable(pp)) for pp in proxy_list if pp.scheme.lower() == 'http']
         for able, pp in await asyncio.gather(*tasks, loop=ev_loop):
             if able:
                 print(pp)

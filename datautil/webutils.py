@@ -2,6 +2,7 @@
 # -*- coding:utf-8 -*-
 
 import aiohttp
+import asyncio
 import random
 from datacenter import ProxyPair
 
@@ -49,13 +50,16 @@ class ProxyValidator:
 
     async def is_useable(self, pp: ProxyPair):
         try:
-            async with self._sess.get('https://httpbin.org/ip',
-                                      proxy='{0}://{1}:{2}'.format(
+            if pp.scheme.lower() == 'https':
+                url = 'https://httpbin.org/ip'
+            else:
+                url = 'http://httpbin.org/ip'
+            async with self._sess.get(url, proxy='{0}://{1}:{2}'.format(
                                          pp.scheme if pp.scheme is not None else 'http',
                                          pp.ip,
                                          pp.port)) as resp:
                 return resp.status == 200, pp
-        except (aiohttp.ServerTimeoutError, aiohttp.ClientError):
+        except (asyncio.TimeoutError, aiohttp.ClientError):
             return False, pp
 
 
