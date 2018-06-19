@@ -64,7 +64,7 @@ class ProxyValidator:
 
 
 class WebSpider:
-    def __init__(self, ev_loop):
+    def __init__(self, ev_loop, proxy=None):
         self._headers = {
             'User-Agent': user_agent(),
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -75,6 +75,13 @@ class WebSpider:
         }
         self._sess = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit_per_host=5),
                                            loop=ev_loop, headers=self._headers, read_timeout=60*2, conn_timeout=60)
+        if proxy is not None:
+            self._proxy = '{0}://{1}:{2}'.format(
+                proxy.scheme if proxy.scheme is not None else 'http',
+                proxy.ip,
+                proxy.port)
+        else:
+            self._proxy = None
 
     def __enter__(self):
         raise TypeError("Use async with instead")
@@ -97,9 +104,15 @@ class WebSpider:
         self._headers.update(value)
 
     async def get(self, url, **kwargs):
-        async with self._sess.get(url, **kwargs) as resp:
+        proxy = kwargs.pop('proxy', None)
+        if proxy is None:
+            proxy = self._proxy
+        async with self._sess.get(url, proxy=proxy, **kwargs) as resp:
             return resp.status, await resp.text()
 
     async def post(self, url, **kwargs):
-        async with self._sess.post(url, **kwargs) as resp:
+        proxy = kwargs.pop('proxy', None)
+        if proxy is None:
+            proxy = self._proxy
+        async with self._sess.post(url, proxy=proxy, **kwargs) as resp:
             return resp.status, await resp.text()

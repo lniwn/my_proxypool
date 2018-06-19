@@ -1,36 +1,30 @@
 # !/usr/bin/python3
 # -*- coding:utf-8 -*-
-import asyncio
+import argparse
 import proxy_sites
-from datautil import webutils
+import server
+from datacenter import datacenter
+from aiohttp import web
 
 
-async def run(ev_loop):
-    proxy_sites.register_all()
-
-    proxy_list = list()
-    print('开始获取代理...')
-    tasks = [asyncio.ensure_future(s.yield_proxy(ev_loop=ev_loop)) for s in proxy_sites.sites.values()]
-    for p in await asyncio.gather(*tasks, loop=ev_loop):
-        proxy_list.extend(p)
-    print('获得原始代理个数：', len(proxy_list))
-    print('开始筛选代理...')
-    async with webutils.ProxyValidator(ev_loop) as validator:
-        # aiohttp only support http proxy
-        tasks = [asyncio.ensure_future(validator.is_useable(pp)) for pp in proxy_list if pp.scheme.lower() == 'http']
-        for able, pp in await asyncio.gather(*tasks, loop=ev_loop):
-            if able:
-                print(pp)
+async def on_startup(app: web.Application):
+    await datacenter.init_center(app.loop)
 
 
 def main():
-    asyncio.set_event_loop(asyncio.new_event_loop())
-    loop = asyncio.get_event_loop()
-    try:
-        loop.run_until_complete(run(loop))
-    finally:
-        loop.run_until_complete(loop.shutdown_asyncgens())
-        loop.close()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--host', type=str, default='127.0.0.1',
+                        help='server running host, default is 127.0.0.1')
+    parser.add_argument('--port', type=int, default=8080,
+                        help='server running port, default is 8080')
+    parser.add_argument('--debug', type=bool, default=False,
+                        help='run server in debug mode')
+    args = parser.parse_args()
+
+    proxy_sites.register_all()
+
+    server.on_startup.append(on_startup)
+    server.run_server(host=args.host, port=args.port)
 
 
 if __name__ == '__main__':
