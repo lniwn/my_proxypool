@@ -2,8 +2,8 @@
 # -*- coding:utf-8 -*-
 from aiohttp import web
 from . import routes
-from datautil import generalutils
-from datacenter import datacenter
+from datautil import generalutils, ormutils
+from datacenter import models
 
 
 @routes.get('/')
@@ -18,4 +18,10 @@ async def consumer(r: web.Request):
     except ImportError as e:
         raise web.HTTPBadRequest() from e
     else:
-        return await impl().consume(datacenter.get_proxy(), r.query)
+        return await impl().consume(r.query)
+
+
+@routes.get('/proxy')
+async def get_proxy(r: web.Request):
+    await ormutils.OrmUtil.query(r.app['db'], models.ProxyTbl)
+    return web.Response(text='to do...')

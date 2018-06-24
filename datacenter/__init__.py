@@ -2,6 +2,9 @@
 # -*- coding:utf-8 -*-
 
 from collections import namedtuple
+# from sqlalchemy.orm import sessionmaker
+
+# DBSession = sessionmaker()
 
 
 class ProxyPair(namedtuple('ProxyPair', ('ip', 'port', 'location', 'scheme'))):

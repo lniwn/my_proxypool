@@ -1,6 +1,8 @@
 # !/usr/bin/python3
 # -*- coding:utf-8 -*-
 import importlib
+import os
+import glob
 
 
 def import_string(dotted_path):
@@ -31,3 +33,9 @@ def import_string(dotted_path):
         raise ImportError('Module "%s" does not define a "%s" attribute/class' % (
             module_path, class_name)
         ) from err
+
+
+def modules_in_current(current):
+    files = glob.glob(os.path.join(current, '*.py'))
+    modules = [os.path.basename(f)[:-3] for f in files if os.path.isfile(f) and not f.endswith('__init__.py')]
+    return modules

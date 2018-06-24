@@ -48,3 +48,7 @@ def register_all(condition=None):
             if (not callable(condition)) or condition(name, obj):
                 if issubclass(obj, Registerable) and (obj is not Registerable):
                     obj()
+
+
+def entire() -> list:
+    return list(sites.values())

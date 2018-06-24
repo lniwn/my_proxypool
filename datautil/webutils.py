@@ -64,7 +64,7 @@ class ProxyValidator:
 
 
 class WebSpider:
-    def __init__(self, ev_loop, proxy=None):
+    def __init__(self, ev_loop, **kwargs):
         self._headers = {
             'User-Agent': user_agent(),
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -73,8 +73,10 @@ class WebSpider:
             'Connection': 'keep-alive',
             'Pragma': 'no-cache'
         }
+        proxy = kwargs.pop('proxy', None)
         self._sess = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit_per_host=5),
-                                           loop=ev_loop, headers=self._headers, read_timeout=60*2, conn_timeout=60)
+                                           loop=ev_loop, headers=self._headers, read_timeout=60*2,
+                                           conn_timeout=60, **kwargs)
         if proxy is not None:
             self._proxy = '{0}://{1}:{2}'.format(
                 proxy.scheme if proxy.scheme is not None else 'http',

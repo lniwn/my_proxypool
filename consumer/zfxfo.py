@@ -3,25 +3,27 @@
 """
 code url: http://zr.zfxfo.com/lib/code.js
 """
-from aiohttp import web
+from aiohttp import web, ClientError
 from multidict import CIMultiDictProxy
 from . import DataConsumer, ConsumerError
 from datautil import webutils
-from datacenter import ProxyPair
+from datacenter import datacenter
 import uuid
 import time
 import re
 import json
 import urllib.parse
 import random
+import asyncio
+import queue
 
 
 class DataConsumerImpl(DataConsumer):
     def __init__(self):
         super().__init__()
         self._user_arg = None
-        self._main_url = 'http://zr.zfxfo.com/mobile/url545/index.html?k=051504'
-        self._k = '051504'
+        self._main_url = 'http://zr.zfxfo.com/mobile/url545/index.html?k=051612'
+        self._k = '051612'
         self._cb = 'jQuery{0}_{1}'.format(uuid.uuid4().int, int(time.time() * 1000))
 
     @staticmethod
@@ -29,22 +31,29 @@ class DataConsumerImpl(DataConsumer):
         js = re.search('(\{.*\})', text).group(1)
         return json.loads(js)
 
-    async def consume(self, proxy: ProxyPair, user_arg: CIMultiDictProxy, **kwargs) -> web.Response:
+    async def consume(self, user_arg: CIMultiDictProxy, **kwargs) -> web.Response:
         self._user_arg = user_arg
-        async with webutils.WebSpider(ev_loop=None, proxy=proxy) as client:
+        while True:
             try:
-                stock = random.choice(await self.get_stock(client))
-                stock = re.search('c:"(\d+)"', stock).group(1)
-                spldid = await self.open_page(client)
-                await self.page_loading(client, spldid)
-                msg = await self.set_pageoperinfo(client, spldid, stock)
-                await self.page_close(client, spldid)
-            except ConsumerError as err:
-                return web.Response(text=err.expression)
-            except AttributeError as err:
-                raise web.HTTPInternalServerError() from err
-            else:
-                return web.Response(text=msg, charset='utf-8')
+                proxy = datacenter.get_proxy(lambda p: p.location != '香港')
+            except queue.Empty:
+                return web.Response(text='目前没有可用代理，请稍候再试', charset='utf-8')
+            async with webutils.WebSpider(ev_loop=None, proxy=proxy) as client:
+                try:
+                    stock = random.choice(await self.get_stock(client))
+                    stock = re.search('c:"(\d+)"', stock).group(1)
+                    spldid = await self.open_page(client)
+                    await self.page_loading(client, spldid)
+                    msg = await self.set_pageoperinfo(client, spldid, stock)
+                    await self.page_close(client, spldid)
+                except ConsumerError as err:
+                    return web.Response(text=err.expression)
+                except AttributeError as err:
+                    raise web.HTTPInternalServerError() from err
+                except (ClientError, asyncio.TimeoutError) as err:
+                    pass  # timeout error, continue
+                else:
+                    return web.Response(text=msg, charset='utf-8')
 
     async def get_stock(self, client) -> list:
         url = "http://zr.zfxfo.com/lib/code.js"

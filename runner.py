@@ -1,14 +1,23 @@
 # !/usr/bin/python3
 # -*- coding:utf-8 -*-
 import argparse
-import proxy_sites
 import server
+import processors
 from datacenter import datacenter
 from aiohttp import web
+from datautil import generalutils
 
 
 async def on_startup(app: web.Application):
-    await datacenter.init_center(app.loop)
+    app['db'] = await datacenter.init_db(app.loop)
+
+    for m in processors.entire():
+        app.loop.call_soon(generalutils.import_string(m).process, app.loop)
+
+
+async def on_shutdown(app: web.Application):
+    await datacenter.shutdown_db(app['db'])
+    app['db'] = None
 
 
 def main():
@@ -21,9 +30,8 @@ def main():
                         help='run server in debug mode')
     args = parser.parse_args()
 
-    proxy_sites.register_all()
-
     server.on_startup.append(on_startup)
+    server.on_shutdown.append(on_shutdown)
     server.run_server(host=args.host, port=args.port)
 
 
