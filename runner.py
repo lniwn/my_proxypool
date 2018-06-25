@@ -1,15 +1,17 @@
 # !/usr/bin/python3
 # -*- coding:utf-8 -*-
 import argparse
+import logging
 import server
 import processors
-from datacenter import datacenter
+from trafaret_config import commandline
+from datacenter import datacenter, TRAFARET
 from aiohttp import web
 from datautil import generalutils
 
 
 async def on_startup(app: web.Application):
-    app['db'] = await datacenter.init_db(app.loop)
+    app['db'] = await datacenter.init_db(app.loop, app['config'])
 
     for m in processors.entire():
         app.loop.call_soon(generalutils.import_string(m).process, app.loop)
@@ -21,18 +23,17 @@ async def on_shutdown(app: web.Application):
 
 
 def main():
+    logging.basicConfig(level=logging.DEBUG)
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--host', type=str, default='127.0.0.1',
-                        help='server running host, default is 127.0.0.1')
-    parser.add_argument('--port', type=int, default=8080,
-                        help='server running port, default is 8080')
-    parser.add_argument('--debug', type=bool, default=False,
-                        help='run server in debug mode')
-    args = parser.parse_args()
+    commandline.standard_argparse_options(parser, default_config='config/config.yaml')
+
+    options, unknown = parser.parse_known_args()
+    config = commandline.config_from_options(options, TRAFARET)
 
     server.on_startup.append(on_startup)
     server.on_shutdown.append(on_shutdown)
-    server.run_server(host=args.host, port=args.port)
+    server.run_server(config)
 
 
 if __name__ == '__main__':
