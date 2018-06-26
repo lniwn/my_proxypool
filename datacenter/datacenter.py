@@ -5,6 +5,8 @@ from aiomysql.sa import create_engine
 from datacenter.models import BaseTable
 import sqlalchemy as sa
 
+__all__ = ['init_db', 'shutdown_db']
+
 SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://{user}:{password}@{host}:{port}/{database}?charset=utf8mb4'
 
 
@@ -22,13 +24,14 @@ def _create_all(config):
 
 async def init_db(loop, config):
     engine_cfg = config['mysql']
-    engine = await create_engine(user=engine_cfg['user'], loop=loop,
+    engine = await create_engine(user=engine_cfg['user'], loop=loop, echo=config['debug'],
                                  host=engine_cfg['host'], port=engine_cfg['port'],
                                  password=engine_cfg['password'], charset='utf8mb4',
                                  autocommit=True, minsize=engine_cfg['minsize'],
                                  maxsize=engine_cfg['maxsize'])
     async with engine.acquire() as conn:
-        await conn.execute('CREATE DATABASE IF NOT EXISTS proxy_pool;')
+        await conn.execute('CREATE DATABASE IF NOT EXISTS proxy_pool'
+                           ' DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;')
         await conn.execute('USE proxy_pool;')
 
         for table in BaseTable.metadata.tables.values():

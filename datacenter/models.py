@@ -9,7 +9,9 @@ BaseTable = declarative_base(metadata=db_meta)
 
 class ProxyTbl(BaseTable):
     __tablename__ = 'tbl_proxy'
-    # __table_args__ = (sa.PrimaryKeyConstraint('ip', 'port', name='ip_port'),)
+    __table_args__ = (
+        {'extend_existing': True},
+    )
 
     ip = sa.Column(sa.String(100), nullable=False, primary_key=True)
     port = sa.Column(sa.Integer, nullable=False, primary_key=True)

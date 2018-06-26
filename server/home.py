@@ -23,5 +23,5 @@ async def consumer(r: web.Request):
 
 @routes.get('/proxy')
 async def get_proxy(r: web.Request):
-    await ormutils.OrmUtil.query(r.app['db'], models.ProxyTbl)
+    results = await ormutils.OrmUtil.query(r.app['db'], models.ProxyTbl)
     return web.Response(text='to do...')

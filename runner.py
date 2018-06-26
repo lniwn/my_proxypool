@@ -14,7 +14,7 @@ async def on_startup(app: web.Application):
     app['db'] = await datacenter.init_db(app.loop, app['config'])
 
     for m in processors.entire():
-        app.loop.call_soon(generalutils.import_string(m).process, app.loop)
+        app.loop.call_soon(generalutils.import_string(m).process, app)
 
 
 async def on_shutdown(app: web.Application):

@@ -4,49 +4,26 @@
 
 class OrmUtil:
     @classmethod
-    async def insert(cls, db, orm_cls, **kwargs):
-        async with db.acquire() as conn:
-            trans = await conn.begin()
-            try:
-                await conn.execute(orm_cls.insert().values(**kwargs))
-            except Exception:
-                await trans.rollback()
-                raise
-            else:
-                await trans.commit()
+    async def insert(cls, conn, orm_cls, **kwargs):
+        return await conn.execute(orm_cls.__table__.insert().values(**kwargs))
 
     @classmethod
-    async def query(cls, db, orm_cls):
-        async with db.acquire() as conn:
-            trans = await conn.begin()
-            try:
-                await conn.execute(orm_cls.select())
-            except Exception:
-                await trans.rollback()
-                raise
-            else:
-                return await trans.commit()
+    async def query(cls, conn, orm_cls, limit=None):
+        sql_stat = orm_cls.__table__.select()
+        if limit is not None:
+            sql_stat = sql_stat.where(limit)
+        q_set = await conn.execute(sql_stat)
+        return await q_set.fetchall()
 
     @classmethod
-    async def delete(cls, db, orm_cls, **kwargs):
-        async with db.acquire() as conn:
-            trans = await conn.begin()
-            try:
-                await conn.execute(orm_cls.delete(**kwargs))
-            except Exception:
-                await trans.rollback()
-                raise
-            else:
-                return await trans.commit()
+    async def delete(cls, conn, orm_cls, limit=None):
+        sql_stat = orm_cls.__table__.delete()
+        if limit is not None:
+            sql_stat = sql_stat.where(limit)
+        return await conn.execute(sql_stat)
 
     @classmethod
-    async def update(cls, db, orm_cls, **kwargs):
-        async with db.acquire() as conn:
-            trans = await conn.begin()
-            try:
-                await conn.execute(orm_cls.update(**kwargs))
-            except Exception:
-                await trans.rollback()
-                raise
-            else:
-                return await trans.commit()
+    async def update(cls, conn, orm_cls, limit=None, **kwargs):
+        assert limit is not None
+        return await conn.execute(
+            orm_cls.__table__.update().where(limit).values(**kwargs))

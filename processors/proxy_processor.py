@@ -2,12 +2,13 @@
 # -*- coding:utf-8 -*-
 import asyncio
 import proxy_sites
-from datautil import webutils
+from datautil import webutils, ormutils
+from datacenter.proxy_tbl_manager import ProxyTblManager
 
 
-async def do_work(loop):
+async def do_work(app):
     raw_proxy_list = []
-    q = list()
+    loop = app.loop
     tasks = [asyncio.ensure_future(s.yield_proxy(ev_loop=loop), loop=loop)
              for s in proxy_sites.entire()]
     for p in await asyncio.gather(*tasks, loop=loop):
@@ -19,11 +20,10 @@ async def do_work(loop):
                  for pp in raw_proxy_list if pp.scheme == 'http']
         for able, pp in await asyncio.gather(*tasks, loop=loop):
             if able:
-                q.append(pp)
-    return q
+                await ProxyTblManager.set_proxy(app['db'], pp)
 
 
-def process(loop):
+def process(app):
     proxy_sites.register_all()
 
-    asyncio.ensure_future(do_work(loop), loop=loop)
+    asyncio.ensure_future(do_work(app), loop=app.loop)
