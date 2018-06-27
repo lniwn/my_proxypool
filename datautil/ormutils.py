@@ -27,3 +27,8 @@ class OrmUtil:
         assert limit is not None
         return await conn.execute(
             orm_cls.__table__.update().where(limit).values(**kwargs))
+
+    @classmethod
+    async def exists(cls, conn, orm_cls, limit=None):
+        assert limit is not None
+        return await (await conn.execute(orm_cls.__table__.select().where(limit))).scalar()

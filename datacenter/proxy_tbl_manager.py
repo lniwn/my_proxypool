@@ -25,16 +25,14 @@ class ProxyTblManager:
     @classmethod
     async def set_proxy(cls, db, proxy):
         async with db.acquire() as conn:
-            q_results = await ormutils.OrmUtil.query(
+            if not await ormutils.OrmUtil.exists(
                 conn, ProxyTbl,
-                and_(ProxyTbl.__table__.c.ip == proxy.ip,
-                     ProxyTbl.__table__.c.port == proxy.port))
-            if len(q_results) == 0:
+                limit=and_(ProxyTbl.__table__.c.ip == proxy.ip,
+                           ProxyTbl.__table__.c.port == proxy.port)):
                 return await ormutils.OrmUtil.insert(
-                    conn,ProxyTbl, ip=proxy.ip, port=proxy.port,
+                    conn, ProxyTbl, ip=proxy.ip, port=proxy.port,
                     scheme=proxy.scheme, location=proxy.location)
             else:
-                assert len(q_results) == 1
                 return await ormutils.OrmUtil.update(
                     conn, ProxyTbl,
                     limit=and_(ProxyTbl.__table__.c.ip == proxy.ip,

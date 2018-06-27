@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 import asyncio
 import proxy_sites
-from datautil import webutils, ormutils
+from datautil import webutils
 from datacenter.proxy_tbl_manager import ProxyTblManager
 
 
