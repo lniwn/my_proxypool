@@ -1,0 +1,16 @@
+---
+# 这是配置文件模板，使用时请根据自己实际情况修改
+
+host: 127.0.0.1 # 服务器监听地址
+port: 8080 # 服务器监听端口
+debug: true # 是否调试模式
+period: 3600 # 代理抓取周期
+
+mysql: # mysql数据库相关配置
+  database: proxy_pool # 数据库名
+  user: null # 用户名
+  password: null # 密码
+  host: null # 地址
+  port: 3307 # 端口
+  minsize: 1 # 连接池最小连接数
+  maxsize: 20 # 连接池最大连接数

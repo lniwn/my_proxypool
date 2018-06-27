@@ -27,4 +27,5 @@ TRAFARET = trafaret.Dict({
     trafaret.Key('host'): trafaret.IP,
     trafaret.Key('port'): trafaret.Int(),
     trafaret.Key('debug'): trafaret.Bool(),
+    trafaret.Key('period'): trafaret.Int()
 })

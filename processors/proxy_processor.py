@@ -22,6 +22,11 @@ async def do_work(app):
             if able:
                 await ProxyTblManager.set_proxy(app['db'], pp)
 
+    # fetch proxy in period
+    loop.call_later(app['config']['period'],
+                    lambda param: asyncio.ensure_future(do_work(param), loop=param.loop),
+                    app)
+
 
 def process(app):
     proxy_sites.register_all()

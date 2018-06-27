@@ -30,9 +30,10 @@ async def init_db(loop, config):
                                  autocommit=True, minsize=engine_cfg['minsize'],
                                  maxsize=engine_cfg['maxsize'])
     async with engine.acquire() as conn:
-        await conn.execute('CREATE DATABASE IF NOT EXISTS proxy_pool'
-                           ' DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;')
-        await conn.execute('USE proxy_pool;')
+        sql_stat = 'CREATE DATABASE IF NOT EXISTS {} ' \
+                   'DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'.format(engine_cfg['database'])
+        await conn.execute(sql_stat)
+        await conn.execute('USE {};'.format(engine_cfg['database']))
 
         for table in BaseTable.metadata.tables.values():
             like_result = await conn.execute("SHOW TABLES LIKE '%s'" % table.name)
