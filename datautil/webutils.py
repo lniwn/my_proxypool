@@ -5,20 +5,11 @@ import aiohttp
 import asyncio
 import random
 from datacenter import ProxyPair
+from . import UA_LIST
 
 
 def user_agent():
-    ua_list = (
-        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.101',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.122',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.71',
-        'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; QQDownload 732; .NET4.0C; .NET4.0E)',
-        'Mozilla/5.0 (Windows NT 5.1; U; en; rv:1.8.1) Gecko/20061208 Firefox/2.0.0 Opera 9.50',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:34.0) Gecko/20100101 Firefox/34.0',
-    )
-    return random.choice(ua_list)
+    return random.choice(UA_LIST)
 
 
 class ProxyValidator:
@@ -56,7 +47,7 @@ class ProxyValidator:
                 url = 'http://httpbin.org/ip'
             async with self._sess.get(url, proxy='{0}://{1}:{2}'.format(
                                          pp.scheme if pp.scheme is not None else 'http',
-                                         pp.ip,
+                                         pp.host,
                                          pp.port)) as resp:
                 return resp.status == 200, pp
         except (asyncio.TimeoutError, aiohttp.ClientError):
@@ -80,7 +71,7 @@ class WebSpider:
         if proxy is not None:
             self._proxy = '{0}://{1}:{2}'.format(
                 proxy.scheme if proxy.scheme is not None else 'http',
-                proxy.ip,
+                proxy.host,
                 proxy.port)
         else:
             self._proxy = None

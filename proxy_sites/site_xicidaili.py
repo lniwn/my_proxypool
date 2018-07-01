@@ -41,9 +41,10 @@ class SiteXici(Registerable):
                             location = location[0].text
                         else:
                             location = tds[3].text
-                        proxies.append(ProxyPair(ip=str(tds[1].text),
+                        proxies.append(ProxyPair(host=str(tds[1].text),
                                                  port=str(tds[2].text),
-                                                 location=str(location),
+                                                 country='国内',
+                                                 area=str(location),
                                                  scheme=str(tds[5].text).lower()))
 
             return proxies

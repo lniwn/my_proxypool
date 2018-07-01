@@ -8,47 +8,44 @@ from sqlalchemy import and_
 
 class ProxyTblManager:
     @classmethod
-    async def get_proxy(cls, db, scheme=None, location=None):
+    async def get_proxy(cls, db, **limit):
         async with db.acquire() as conn:
-            limit = None
-            if isinstance(scheme, str):
-                limit = (ProxyTbl.__table__.c.scheme == scheme)
-            if isinstance(location, str):
-                limit2 = ProxyTbl.__table__.like("%{}%".format(location))
-                if limit is None:
-                    limit = limit2
+            expr = None
+            for k, v in limit.items():
+                in_expr = getattr(ProxyTbl.__table__.c, k) == v
+                if expr is not None:
+                    expr = and_(expr, in_expr)
                 else:
-                    limit = and_(limit, limit2)
-
-            return await ormutils.OrmUtil.query(conn, ProxyTbl, limit=limit)
+                    expr = in_expr
+                # ProxyTbl.__table__.like("%{}%".format(area))
+            return await ormutils.OrmUtil.query(conn, ProxyTbl, limit=expr)
 
     @classmethod
     async def set_proxy(cls, db, proxy):
         async with db.acquire() as conn:
             if not await ormutils.OrmUtil.exists(
                 conn, ProxyTbl,
-                limit=and_(ProxyTbl.__table__.c.ip == proxy.ip,
+                limit=and_(ProxyTbl.__table__.c.host == proxy.host,
                            ProxyTbl.__table__.c.port == proxy.port)):
                 return await ormutils.OrmUtil.insert(
-                    conn, ProxyTbl, ip=proxy.ip, port=proxy.port,
-                    scheme=proxy.scheme, location=proxy.location)
+                    conn, ProxyTbl, host=proxy.host, port=proxy.port,
+                    scheme=proxy.scheme, country=proxy.country, area=proxy.area)
             else:
                 return await ormutils.OrmUtil.update(
                     conn, ProxyTbl,
-                    limit=and_(ProxyTbl.__table__.c.ip == proxy.ip,
+                    limit=and_(ProxyTbl.__table__.c.host == proxy.host,
                                ProxyTbl.__table__.c.port == proxy.port),
-                    scheme=proxy.scheme, location=proxy.location)
+                    scheme=proxy.scheme, country=proxy.country, area=proxy.area)
 
     @classmethod
-    async def delete_proxy(cls, db, ip=None, port=None):
+    async def delete_proxy(cls, db, **limit):
+        expr = None
+        for k, v in limit.items():
+            in_expr = getattr(ProxyTbl.__table__.c, k) == v
+            if expr is not None:
+                expr = and_(expr, in_expr)
+            else:
+                expr = in_expr
+
         async with db.acquire() as conn:
-            limit = None
-            if isinstance(ip, str):
-                limit = (ProxyTbl.__table__.c.ip == ip)
-            if isinstance(port, int):
-                limit2 = (ProxyTbl.__table__.c.port == port)
-                if limit is None:
-                    limit = limit2
-                else:
-                    limit = and_(limit, limit2)
-            return await ormutils.OrmUtil.delete(conn, ProxyTbl, limit)
+            return await ormutils.OrmUtil.delete(conn, ProxyTbl, expr)

@@ -13,12 +13,15 @@ class ProxyTbl(BaseTable):
         {'extend_existing': True},
     )
 
-    ip = sa.Column(sa.String(100), nullable=False, primary_key=True)
+    host = sa.Column(sa.String(100), nullable=False, primary_key=True)
     port = sa.Column(sa.Integer, nullable=False, primary_key=True)
     scheme = sa.Column(sa.String(10), nullable=False)
-    location = sa.Column(sa.String(50), nullable=True)
+    country = sa.Column(sa.String(20), nullable=True)
+    area = sa.Column(sa.String(20), nullable=True)
+    update_time = sa.Column(sa.TIMESTAMP(True), nullable=False,
+                            server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
 
     def __repr__(self):
-        return "<Proxy(ip='%s', port=%d, scheme='%s', location='%s')>" % (
-            self.ip, self.port, self.scheme, self.location
+        return "<Proxy(host='%s', port=%d, scheme='%s', country='%s, area=%s, update_time=%s')>" % (
+            self.host, self.port, self.scheme, self.country, self.area, self.update_time
         )

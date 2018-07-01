@@ -28,8 +28,9 @@ class Site66IP(Registerable):
                     if len(tr_list) == 0:
                         continue
                     for tr in tr_list:
-                        proxies.append(ProxyPair(ip=tr.xpath("./td[1]/text()")[0],
+                        proxies.append(ProxyPair(host=tr.xpath("./td[1]/text()")[0],
                                                  port=tr.xpath("./td[2]/text()")[0],
-                                                 location=tr.xpath("./td[3]/text()")[0],
+                                                 country='国内',
+                                                 area=tr.xpath("./td[3]/text()")[0],
                                                  scheme='http'))
             return proxies

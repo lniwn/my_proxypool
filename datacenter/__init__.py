@@ -7,11 +7,12 @@ from collections import namedtuple
 # DBSession = sessionmaker()
 
 
-class ProxyPair(namedtuple('ProxyPair', ('ip', 'port', 'location', 'scheme'))):
+class ProxyPair(namedtuple('ProxyPair', ('host', 'port', 'scheme', 'country', 'area'))):
     __slots__ = ()
 
     def __str__(self):
-        return str({'ip': self.ip, 'port': self.port, 'location': self.location, 'scheme': self.scheme})
+        return str({'host': self.host, 'port': self.port,
+                    'scheme': self.scheme, 'country': self.country, 'area': self.area})
 
 
 TRAFARET = trafaret.Dict({
