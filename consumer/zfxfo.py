@@ -7,7 +7,7 @@ from aiohttp import web, ClientError
 from multidict import CIMultiDictProxy
 from . import DataConsumer, ConsumerError
 from datautil import webutils
-from datacenter import datacenter
+from datacenter.proxy_tbl_manager import ProxyTblManager
 import uuid
 import time
 import re
@@ -22,8 +22,8 @@ class DataConsumerImpl(DataConsumer):
     def __init__(self):
         super().__init__()
         self._user_arg = None
-        self._main_url = 'http://zr.zfxfo.com/mobile/url545/index.html?k=051612'
-        self._k = '051612'
+        self._k = ''.join(str(i) for i in random.sample(range(0, 9), 4))
+        self._main_url = 'http://bk.sxzctec043.cn/pc/url658/index.html?k=slla08gpmcdm' + self._k
         self._cb = 'jQuery{0}_{1}'.format(uuid.uuid4().int, int(time.time() * 1000))
 
     @staticmethod
@@ -31,13 +31,14 @@ class DataConsumerImpl(DataConsumer):
         js = re.search('(\{.*\})', text).group(1)
         return json.loads(js)
 
-    async def consume(self, user_arg: CIMultiDictProxy, **kwargs) -> web.Response:
-        self._user_arg = user_arg
+    async def consume(self, req: web.Request, **kwargs) -> web.Response:
+        self._user_arg = req.query
         while True:
             try:
-                proxy = datacenter.get_proxy(lambda p: p.location != '香港')
+                all_proxy = await ProxyTblManager.get_proxy(req.app['db'])
             except queue.Empty:
                 return web.Response(text='目前没有可用代理，请稍候再试', charset='utf-8')
+            proxy = random.choice(all_proxy)
             async with webutils.WebSpider(ev_loop=None, proxy=proxy) as client:
                 try:
                     stock = random.choice(await self.get_stock(client))

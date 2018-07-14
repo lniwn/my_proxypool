@@ -1,7 +1,10 @@
 # !/usr/bin/python3
 # -*- coding:utf-8 -*-
 import os.path
+import logging
 from datautil import generalutils
+
+mylog = logging.getLogger(__name__)
 
 
 def entire() -> list:

@@ -23,7 +23,11 @@ async def on_shutdown(app: web.Application):
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s - %(name)-12s - %(levelname)-5s - %(message)s',
+        datefmt='%y-%m-%d %H:%M:%S'
+    )
 
     parser = argparse.ArgumentParser()
     commandline.standard_argparse_options(parser, default_config='config/config.yaml')

@@ -18,7 +18,7 @@ async def consumer(r: web.Request):
     except ImportError as e:
         raise web.HTTPBadRequest() from e
     else:
-        return await impl().consume(r.query)
+        return await impl().consume(r)
 
 
 @routes.get('/proxy')

@@ -11,13 +11,17 @@ class ProxyTblManager:
     async def get_proxy(cls, db, **limit):
         async with db.acquire() as conn:
             expr = None
+            area = limit.pop('area', None)
+            if area is not None:
+                expr = ProxyTbl.__table__.c.area.like("%{}%".format(area))
+
             for k, v in limit.items():
                 in_expr = getattr(ProxyTbl.__table__.c, k) == v
                 if expr is not None:
                     expr = and_(expr, in_expr)
                 else:
                     expr = in_expr
-                # ProxyTbl.__table__.like("%{}%".format(area))
+
             return await ormutils.OrmUtil.query(conn, ProxyTbl, limit=expr)
 
     @classmethod

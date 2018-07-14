@@ -1,7 +1,10 @@
 # !/usr/bin/python3
 # -*- coding:utf-8 -*-
 import abc
+import logging
 from aiohttp import web
+
+mylog = logging.getLogger(__name__)
 
 
 class DataConsumer(abc.ABC):
