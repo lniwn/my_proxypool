@@ -4,6 +4,7 @@
 from .models import ProxyTbl
 from datautil import ormutils
 from sqlalchemy import and_
+from aiomysql.cursors import SSCursor
 
 
 class ProxyTblManager:
@@ -23,6 +24,29 @@ class ProxyTblManager:
                     expr = in_expr
 
             return await ormutils.OrmUtil.query(conn, ProxyTbl, limit=expr)
+
+    @classmethod
+    async def get_proxy_stream(cls, db, on_proxy, **limit):
+        async with db.acquire() as conn:
+            # async with conn.cursor(SSCursor) as cur:
+            expr = None
+            area = limit.pop('area', None)
+            if area is not None:
+                expr = ProxyTbl.__table__.c.area.like("%{}%".format(area))
+
+            for k, v in limit.items():
+                in_expr = getattr(ProxyTbl.__table__.c, k) == v
+                if expr is not None:
+                    expr = and_(expr, in_expr)
+                else:
+                    expr = in_expr
+
+            result = await ormutils.OrmUtil.query(conn, ProxyTbl, limit=expr)
+            # while True:
+            #     fetched_list = await result.fetchmany(10000)
+            #     if fetched_list is None:
+            #         break
+            await on_proxy(result)
 
     @classmethod
     async def set_proxy(cls, db, proxy):

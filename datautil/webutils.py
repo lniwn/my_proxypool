@@ -4,6 +4,7 @@
 import aiohttp
 import asyncio
 import random
+import json
 from datacenter import ProxyPair
 from . import UA_LIST
 
@@ -42,14 +43,28 @@ class ProxyValidator:
     async def is_useable(self, pp: ProxyPair):
         try:
             if pp.scheme.lower() == 'https':
-                url = 'https://httpbin.org/ip'
+                url = 'http://ip.taobao.com/service/getIpInfo2.php?ip=myip'
             else:
-                url = 'http://httpbin.org/ip'
+                url = 'http://ip.taobao.com/service/getIpInfo2.php?ip=myip'
             async with self._sess.get(url, proxy='{0}://{1}:{2}'.format(
                                          pp.scheme if pp.scheme is not None else 'http',
                                          pp.host,
                                          pp.port)) as resp:
-                return resp.status == 200, pp
+                if resp.status != 200:
+                    return False, pp
+                try:
+                    json_pp = await resp.json(encoding='utf-8', content_type=None)
+                except json.JSONDecodeError:
+                    return False, pp
+                if (json_pp is None) \
+                        or (json_pp['code'] != 0) \
+                        or (json_pp['data']['ip'] != pp.host):
+                    return False, pp
+                new_pp = ProxyPair(host=pp.host, port=pp.port, scheme=pp.scheme if pp.scheme is not None else 'http',
+                                   country=json_pp['data']['country'],
+                                   area='%s.%s' % (json_pp['data']['region'], json_pp['data']['city']))
+                return True, new_pp
+
         except (asyncio.TimeoutError, aiohttp.ClientError):
             return False, pp
 

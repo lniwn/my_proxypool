@@ -8,7 +8,7 @@ from . import mylog
 
 
 async def do_work(app):
-    mylog.info('开始获取原始代理IP')
+    mylog.info('%s开始执行', __name__)
     raw_proxy_list = []
     loop = app.loop
     tasks = [asyncio.ensure_future(s.yield_proxy(ev_loop=loop), loop=loop)
