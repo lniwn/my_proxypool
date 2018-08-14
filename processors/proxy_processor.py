@@ -4,6 +4,7 @@ import asyncio
 import proxy_sites
 from datautil import webutils
 from datacenter.proxy_tbl_manager import ProxyTblManager
+from sqlalchemy.exc import SQLAlchemyError
 from . import mylog
 
 
@@ -23,7 +24,10 @@ async def do_work(app):
                  for pp in raw_proxy_list if pp.scheme == 'http']
         for able, pp in await asyncio.gather(*tasks, loop=loop):
             if able:
-                await ProxyTblManager.set_proxy(app['db'], pp)
+                try:
+                    await ProxyTblManager.set_proxy(app['db'], pp)
+                except SQLAlchemyError as er:
+                    mylog.exception(er)
 
     # check ip location
     # http://ip.chinaz.com/getip.aspx

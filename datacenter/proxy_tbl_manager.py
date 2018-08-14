@@ -4,7 +4,6 @@
 from .models import ProxyTbl
 from datautil import ormutils
 from sqlalchemy import and_
-from aiomysql.cursors import SSCursor
 
 
 class ProxyTblManager:

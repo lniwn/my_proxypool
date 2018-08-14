@@ -6,7 +6,7 @@ import asyncio
 import random
 import json
 from datacenter import ProxyPair
-from . import UA_LIST
+from . import UA_LIST, mylog
 
 
 def user_agent():
@@ -115,12 +115,21 @@ class WebSpider:
         proxy = kwargs.pop('proxy', None)
         if proxy is None:
             proxy = self._proxy
-        async with self._sess.get(url, proxy=proxy, **kwargs) as resp:
-            return resp.status, await resp.text()
+
+        try:
+            async with self._sess.get(url, proxy=proxy, **kwargs) as resp:
+                return resp.status, await resp.text()
+        except aiohttp.ClientError as err:
+            mylog.exception(err)
+            return None, None
 
     async def post(self, url, **kwargs):
         proxy = kwargs.pop('proxy', None)
         if proxy is None:
             proxy = self._proxy
         async with self._sess.post(url, proxy=proxy, **kwargs) as resp:
-            return resp.status, await resp.text()
+            try:
+                return resp.status, await resp.text()
+            except aiohttp.ClientError as err:
+                mylog.exception(err)
+                return None, None
