@@ -3,26 +3,36 @@
 
 from .models import ProxyTbl
 from datautil import ormutils
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 
 
 class ProxyTblManager:
     @classmethod
-    async def get_proxy(cls, db, **limit):
+    async def get_proxy(cls, db, **limits):
         async with db.acquire() as conn:
-            expr = None
-            area = limit.pop('area', None)
+
+            conds = []
+            used_time = limits.pop('used_time', None)
+            if used_time is not None:
+                conds.append(or_(ProxyTbl.used_time == None, ProxyTbl.used_time < used_time))
+            area = limits.pop('area', None)
             if area is not None:
-                expr = ProxyTbl.__table__.c.area.like("%{}%".format(area))
+                conds.append(ProxyTbl.__table__.c.area.like("%{}%".format(area)))
+            limit = limits.pop('limit', None)
 
-            for k, v in limit.items():
+            for k, v in limits.items():
                 in_expr = getattr(ProxyTbl.__table__.c, k) == v
-                if expr is not None:
-                    expr = and_(expr, in_expr)
-                else:
-                    expr = in_expr
+                conds.append(in_expr)
 
-            return await ormutils.OrmUtil.query(conn, ProxyTbl, limit=expr)
+            expr = None
+            if conds:
+                expr = and_(*conds)
+
+            if limit is None:
+                return await ormutils.OrmUtil.query(conn, ProxyTbl, limit=expr)
+            else:
+                return await (await ormutils.OrmUtil.execute(
+                    conn, ProxyTbl.__table__.select().where(expr).limit(limit))).fetchall()
 
     @classmethod
     async def get_proxy_stream(cls, db, on_proxy, **limit):

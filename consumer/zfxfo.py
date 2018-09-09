@@ -4,7 +4,6 @@
 code url: http://zr.zfxfo.com/lib/code.js
 """
 from aiohttp import web, ClientError
-from multidict import CIMultiDictProxy
 from . import DataConsumer, ConsumerError
 from datautil import webutils
 from datacenter.proxy_tbl_manager import ProxyTblManager

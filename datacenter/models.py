@@ -1,6 +1,7 @@
 # !/usr/bin/python3
 # -*- coding:utf-8 -*-
 import sqlalchemy as sa
+import datetime
 from sqlalchemy.ext.declarative import declarative_base
 
 db_meta = sa.MetaData()
@@ -20,6 +21,7 @@ class ProxyTbl(BaseTable):
     area = sa.Column(sa.String(20), nullable=True)
     update_time = sa.Column(sa.TIMESTAMP(True), nullable=False,
                             server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'))
+    used_time = sa.Column(sa.TIMESTAMP(True), default=datetime.datetime.now())
 
     def __repr__(self):
         return "<Proxy(host='%s', port=%d, scheme='%s', country='%s, area=%s, update_time=%s')>" % (

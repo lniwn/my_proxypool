@@ -32,3 +32,7 @@ class OrmUtil:
     async def exists(cls, conn, orm_cls, limit=None):
         assert limit is not None
         return await (await conn.execute(orm_cls.__table__.select().where(limit))).scalar()
+
+    @classmethod
+    async def execute(cls, conn, sql):
+        return await conn.execute(sql)
