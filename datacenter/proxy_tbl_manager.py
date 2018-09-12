@@ -10,7 +10,6 @@ class ProxyTblManager:
     @classmethod
     async def get_proxy(cls, db, **limits):
         async with db.acquire() as conn:
-
             conds = []
             used_time = limits.pop('used_time', None)
             if used_time is not None:
@@ -65,14 +64,12 @@ class ProxyTblManager:
                 limit=and_(ProxyTbl.__table__.c.host == proxy.host,
                            ProxyTbl.__table__.c.port == proxy.port)):
                 return await ormutils.OrmUtil.insert(
-                    conn, ProxyTbl, host=proxy.host, port=proxy.port,
-                    scheme=proxy.scheme, country=proxy.country, area=proxy.area)
+                    conn, ProxyTbl, ormutils.OrmUtil.model2dict(proxy))
             else:
                 return await ormutils.OrmUtil.update(
-                    conn, ProxyTbl,
+                    conn, ProxyTbl, ormutils.OrmUtil.model2dict(proxy),
                     limit=and_(ProxyTbl.__table__.c.host == proxy.host,
-                               ProxyTbl.__table__.c.port == proxy.port),
-                    scheme=proxy.scheme, country=proxy.country, area=proxy.area)
+                               ProxyTbl.__table__.c.port == proxy.port))
 
     @classmethod
     async def delete_proxy(cls, db, **limit):

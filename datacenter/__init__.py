@@ -1,18 +1,18 @@
 # !/usr/bin/python3
 # -*- coding:utf-8 -*-
 import trafaret
-from collections import namedtuple
+# from collections import namedtuple
+from datacenter import models
 # from sqlalchemy.orm import sessionmaker
 
 # DBSession = sessionmaker()
 
 
-class ProxyPair(namedtuple('ProxyPair', ('host', 'port', 'scheme', 'country', 'area'))):
-    __slots__ = ()
-
-    def __str__(self):
-        return str({'host': self.host, 'port': self.port,
-                    'scheme': self.scheme, 'country': self.country, 'area': self.area})
+# class ProxyPair(namedtuple('ProxyPair', models.ProxyTbl.__table__.columns.keys())):
+#     __slots__ = ()
+#
+#     def __str__(self):
+#         return str(self._asdict())
 
 
 TRAFARET = trafaret.Dict({

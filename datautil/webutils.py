@@ -5,12 +5,22 @@ import aiohttp
 import asyncio
 import random
 import json
-from datacenter import ProxyPair
+import socket
+import struct
+from datacenter import models
 from . import UA_LIST, mylog
 
 
 def user_agent():
     return random.choice(UA_LIST)
+
+
+def ip2int(addr):
+    return struct.unpack('!I', socket.inet_aton(addr))[0]
+
+
+def int2ip(addr):
+    return socket.inet_ntoa(struct.pack('!I', addr))
 
 
 class ProxyValidator:
@@ -40,7 +50,7 @@ class ProxyValidator:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self._sess.close()
 
-    async def is_useable(self, pp: ProxyPair):
+    async def is_useable(self, pp: models.ProxyTbl):
         try:
             if pp.scheme.lower() == 'https':
                 url = 'http://ip.taobao.com/service/getIpInfo2.php?ip=myip'
@@ -60,9 +70,10 @@ class ProxyValidator:
                         or (json_pp['code'] != 0) \
                         or (json_pp['data']['ip'] != pp.host):
                     return False, pp
-                new_pp = ProxyPair(host=pp.host, port=pp.port, scheme=pp.scheme if pp.scheme is not None else 'http',
-                                   country=json_pp['data']['country'],
-                                   area='%s.%s' % (json_pp['data']['region'], json_pp['data']['city']))
+                new_pp = models.ProxyTbl(host=pp.host, port=pp.port,
+                                         scheme=pp.scheme if pp.scheme is not None else 'http',
+                                         country=json_pp['data']['country'],
+                                         area='%s.%s' % (json_pp['data']['region'], json_pp['data']['city']))
                 return True, new_pp
 
         except (asyncio.TimeoutError, aiohttp.ClientError):

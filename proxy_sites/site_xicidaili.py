@@ -3,7 +3,7 @@
 import asyncio
 from lxml import etree
 from . import Registerable
-from datacenter import ProxyPair
+from datacenter import models
 from datautil import webutils
 
 
@@ -41,10 +41,10 @@ class SiteXici(Registerable):
                             location = location[0].text
                         else:
                             location = tds[3].text
-                        proxies.append(ProxyPair(host=str(tds[1].text),
-                                                 port=str(tds[2].text),
-                                                 country='国内',
-                                                 area=str(location),
-                                                 scheme=str(tds[5].text).lower()))
+                        proxies.append(models.ProxyTbl(host=str(tds[1].text),
+                                                       port=int(tds[2].text),
+                                                       country='中国',
+                                                       area=str(location),
+                                                       scheme=str(tds[5].text).lower()))
 
             return proxies

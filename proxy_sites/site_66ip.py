@@ -3,7 +3,7 @@
 import asyncio
 from lxml import etree
 from . import Registerable
-from datacenter import ProxyPair
+from datacenter import models
 from datautil import webutils
 
 
@@ -28,9 +28,9 @@ class Site66IP(Registerable):
                     if len(tr_list) == 0:
                         continue
                     for tr in tr_list:
-                        proxies.append(ProxyPair(host=tr.xpath("./td[1]/text()")[0],
-                                                 port=tr.xpath("./td[2]/text()")[0],
-                                                 country='国内',
-                                                 area=tr.xpath("./td[3]/text()")[0],
-                                                 scheme='http'))
+                        proxies.append(models.ProxyTbl(host=tr.xpath("./td[1]/text()")[0],
+                                                       port=int(tr.xpath("./td[2]/text()")[0]),
+                                                       country='中国',
+                                                       area=tr.xpath("./td[3]/text()")[0],
+                                                       scheme='http'))
             return proxies
