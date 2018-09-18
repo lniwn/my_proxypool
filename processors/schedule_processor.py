@@ -21,12 +21,13 @@ def process(app):
 async def scan_database(app):
     mylog.info('%s开始执行', __name__)
 
-    await on_get_proxy(await ProxyTblManager.get_proxy(app['db']), app)
-
-    mylog.info('服务器数据清洗完成，创建下一次定时任务')
-    app.loop.call_later(app['config']['period'] * 5.5,
-                        lambda param: asyncio.ensure_future(scan_database(param), loop=param.loop),
-                        app)
+    try:
+        await on_get_proxy(await ProxyTblManager.get_proxy(app['db']), app)
+    finally:
+        mylog.info('服务器数据清洗完成，创建下一次定时任务')
+        app.loop.call_later(app['config']['period'] * 5.5,
+                            lambda param: asyncio.ensure_future(scan_database(param), loop=param.loop),
+                            app)
 
 
 async def on_get_proxy(proxy_list, app):

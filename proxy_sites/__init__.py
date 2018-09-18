@@ -1,8 +1,10 @@
 # !/usr/bin/python3
 # -*- coding:utf-8 -*-
 import abc
+import logging
 
 sites = dict()
+mylog = logging.getLogger(__name__)
 
 
 class Registerable(abc.ABC):
