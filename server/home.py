@@ -1,9 +1,10 @@
 # !/usr/bin/python3
 # -*- coding:utf-8 -*-
 from aiohttp import web
-from . import routes
+from . import routes, mylog
 from datautil import generalutils, ormutils
 from datacenter import models
+from consumer import ConsumerError
 
 
 @routes.get('/')
@@ -18,7 +19,11 @@ async def consumer(r: web.Request):
     except ImportError as e:
         raise web.HTTPBadRequest() from e
     else:
-        return await impl().consume(r)
+        try:
+            return await impl().consume(r)
+        except ConsumerError as e:
+            mylog.exception(e)
+            return web.Response(text=e, status=200)
 
 
 @routes.get('/proxy')

@@ -2,6 +2,7 @@
 # -*- coding:utf-8 -*-
 import aiohttp_jinja2
 import jinja2
+import logging
 from aiohttp import web
 from datautil import generalutils
 from server.middlewares import init_middlewares
@@ -10,6 +11,7 @@ from server.middlewares import init_middlewares
 routes = web.RouteTableDef()
 on_startup = []
 on_shutdown = []
+mylog = logging.getLogger(__name__)
 
 
 def _init_server(app: web.Application):

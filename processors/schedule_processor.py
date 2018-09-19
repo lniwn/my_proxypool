@@ -8,6 +8,7 @@ E-mail: lniwn@live.com
 
 """
 import asyncio
+import datetime
 from . import mylog
 from datacenter.proxy_tbl_manager import ProxyTblManager
 from datautil import webutils
@@ -43,9 +44,12 @@ async def on_get_proxy(proxy_list, app):
 async def scan_one_proxy(app, validator, p):
     useable, p = await validator.is_useable(p)
     try:
+        cur_time = datetime.datetime.now()
         if not useable:
-            await ProxyTblManager.delete_proxy(app['db'], host=p.host, port=p.port)
+            if cur_time - p.update_time > datetime.timedelta(days=3):
+                await ProxyTblManager.delete_proxy(app['db'], host=p.host, port=p.port)
         else:
+            p.update_time = cur_time
             await ProxyTblManager.set_proxy(app['db'], p)
     except SQLAlchemyError as er:
         mylog.exception(er)

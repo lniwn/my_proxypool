@@ -66,8 +66,10 @@ class ProxyTblManager:
                 return await ormutils.OrmUtil.insert(
                     conn, ProxyTbl, ormutils.OrmUtil.model2dict(proxy))
             else:
+                proxy_dict = ormutils.OrmUtil.model2dict(proxy)
+                proxy_dict.pop('used_time')
                 return await ormutils.OrmUtil.update(
-                    conn, ProxyTbl, ormutils.OrmUtil.model2dict(proxy),
+                    conn, ProxyTbl, proxy_dict,
                     limit=and_(ProxyTbl.__table__.c.host == proxy.host,
                                ProxyTbl.__table__.c.port == proxy.port))
 

@@ -38,7 +38,7 @@ class OrmUtil:
         return await conn.execute(sql)
 
     @classmethod
-    def model2dict(cls, m):
+    def model2dict(cls, m) -> dict:
         # from sqlalchemy.orm import class_mapper
         # columns = [c.key for c in class_mapper(model.__class__).columns]
         columns = [c.key for c in m.__table__.c]
