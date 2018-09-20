@@ -23,7 +23,7 @@ async def consumer(r: web.Request):
             return await impl().consume(r)
         except ConsumerError as e:
             mylog.exception(e)
-            return web.Response(text=e, status=200)
+            return web.Response(text=str(e), status=200)
 
 
 @routes.get('/proxy')
